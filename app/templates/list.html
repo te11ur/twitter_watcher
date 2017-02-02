@@ -1,0 +1,65 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+<br />
+{% block content %}
+	<script>
+		function remove(id) {
+			var form = $('form[name="{{ model }}"]');
+			var del = $('input[name="delete"]', form).val(id);
+			form.submit();
+		}
+		function edit(obj) {
+			var form = $('form[name="{{ model }}"]');
+			form.show();
+			for(var i in obj) {
+				$('input[name="' + i + '"]', form).val(obj[i]);
+			}
+			$('input[name="delete"]', form).val(0);
+		}
+
+		$(function() {
+			$('.element_edit', '#list').click(function(e) {
+				edit($(this).data());
+				return false;
+			});
+			$('.element_delete', '#list').click(function(e) {
+				remove($(this).data('id'));
+				return false;
+			});
+		});
+	</script>
+	<form action="" method="post" name="{{ model }}" style="display: none">
+		<table>
+		{{form.hidden_tag()}}
+		{% for field in form if field.type != 'HiddenField' and field.type != 'CSRFTokenField' %}
+			<tr>
+				<th>{{ field.label }}</th>
+				<td>{{ field }}</td>
+				<id>{% if form.errors.get(field.label) %}<span style="color: red;">[{{form.errors.get(field.label)}}]</span><br>{% endif %}</td>
+			</tr>
+		{% endfor %}
+		<tr>
+			<td></td>
+			<td><input type="submit" value="Save {{ title }}" ></td>
+			<td></td>
+		</tr>
+		</table>
+	</form>
+	<br />
+	<table id="list">
+		<tr>
+		{% for element in elements.items %}
+			{% for attr in fields %}
+				<td>{{element[attr]}}</td>
+			{% endfor %}
+			<td><a href="#" class="element_edit"  
+			{% for attr in fields %}
+				data-{{attr}} = "{{element[attr]}}"
+			{% endfor %}>Edit</a></td>
+			<td><a href="#" class="element_delete" data-id="{{element.id}}">Remove</a></td>
+		{% endfor %}
+		</tr>
+	</table>
+	{% if elements.has_prev %}<a href="{{ url_for(route, page = elements.prev_num) }}"><< Newer {{ title }}</a>{% else %}<< Newer {{ title }}{% endif %} | 
+	{% if elements.has_next %}<a href="{{ url_for(route, page = elements.next_num) }}">Older {{ title }} >></a>{% else %}Older {{ title }} >>{% endif %}
+{% endblock %}

@@ -27,17 +27,16 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % (self.nickname)
 
-class Service(db.Model):
+class Repository(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    command = db.Column(db.String(100), nullable=False)
-    repository = db.Column(db.Boolean, default=False)
-    push = db.Column(db.Boolean, default=False)
-    status = db.Column(db.Enum("off", "on"))
-    enabled = db.Column(db.Boolean, default=False)
-    watchers = db.relationship("Watcher", order_by=Watcher.id, back_populates="service", cascade="all, delete, delete-orphan")
+    watcher_id = db.Column(db.Integer, db.ForeignKey('watcher.id'))
+    watcher = db.relationship("Watcher", back_populates="repositories")
+    create = db.Column(db.Time)
+    add = db.Column(db.Time)
+    push = db.Column(db.Time)
 
     def __repr__(self):
-        return "<Service(command='%s')>" % self.command
+        return "<Repository(create='%s')>" % self.create
 
 class Watcher(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,6 +50,18 @@ class Watcher(db.Model):
     def __repr__(self):
         return "<Watcher(name='%s')>" % self.name
 
+class Service(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    command = db.Column(db.String(100), nullable=False)
+    repository = db.Column(db.Boolean, default=False)
+    push = db.Column(db.Boolean, default=False)
+    status = db.Column(db.Enum('off', 'on', name='status_types'))
+    enabled = db.Column(db.Boolean, default=False)
+    watchers = db.relationship("Watcher", order_by=Watcher.id, back_populates="service", cascade="all, delete, delete-orphan")
+
+    def __repr__(self):
+        return "<Service(command='%s')>" % self.command
+
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -58,15 +69,4 @@ class Application(db.Model):
 
     def __repr__(self):
         return "<Application(name='%s')>" % self.name
-
-class Repository(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    watcher_id = db.Column(db.Integer, db.ForeignKey('watcher.id'))
-    watcher = db.relationship("Watcher", back_populates="repositories")
-    create = db.Column(db.Time)
-    add = db.Column(db.Time)
-    push = db.Column(db.Time)
-
-    def __repr__(self):
-        return "<Repository(create='%s')>" % self.create
 

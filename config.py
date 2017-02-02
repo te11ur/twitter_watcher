@@ -8,6 +8,7 @@ SERVER_HOST = 'localhost'
 SERVER_PORT = 5000
 WTF_CSRF_ENABLED = True
 SECRET_KEY = 'you-will-never-guess'
+POSTS_PER_PAGE = 3
 
 OPENID_PROVIDERS = [
     { 'name': 'Google', 'url': 'https://www.google.com/accounts/o8/id' },
