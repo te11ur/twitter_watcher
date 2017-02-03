@@ -36,7 +36,7 @@ class Repository(db.Model):
     push = db.Column(db.Time)
 
     def __repr__(self):
-        return "<Repository(create='%s')>" % self.create
+        return self.create
 
 class Watcher(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,7 +48,7 @@ class Watcher(db.Model):
     repositories = db.relationship("Repository", order_by=Repository.id, back_populates="watcher")
    
     def __repr__(self):
-        return "<Watcher(name='%s')>" % self.name
+        return self.name
 
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -60,7 +60,7 @@ class Service(db.Model):
     watchers = db.relationship("Watcher", order_by=Watcher.id, back_populates="service", cascade="all, delete, delete-orphan")
 
     def __repr__(self):
-        return "<Service(command='%s')>" % self.command
+        return self.command
 
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,5 +68,5 @@ class Application(db.Model):
     watchers = db.relationship("Watcher", order_by=Watcher.id, back_populates="application")
 
     def __repr__(self):
-        return "<Application(name='%s')>" % self.name
+        return self.name
 

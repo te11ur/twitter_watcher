@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import TextField, BooleanField, HiddenField, BooleanField, SelectField
+from wtforms import TextField, BooleanField, HiddenField, BooleanField, SelectField, DateTimeField
 from wtforms.validators import Required
 
 class LoginForm(FlaskForm):
@@ -25,3 +25,10 @@ class WatcherForm(FlaskForm):
 	name = TextField('Name', validators = [Required()])
 	application = SelectField('Application', validators = [Required()], coerce = int)
 	service = SelectField('Service', validators = [Required()], coerce = int)
+
+class RepositoryForm(FlaskForm):
+	id = HiddenField('Id')
+	delete = HiddenField('delete')
+	add = DateTimeField('Add', validators = [Required()])
+	push = DateTimeField('Push', validators = [Required()])
+	watcher = SelectField('Watcher', validators = [Required()], coerce = int)

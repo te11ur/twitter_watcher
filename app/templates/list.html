@@ -30,52 +30,6 @@
 			update(fields, form);			
 			form.show();		
 		}
-
-		function update(fields, form) {
-			for(var field in fields) {
-				var val = fields[field];
-				val = ['false', 'False'].indexOf(val) >= 0 ? false : val;
-				val = ['true', 'True'].indexOf(val) >= 0 ? true : val;
-				var elm = $('[name="' + field +'"]', form);
-				if(elm.is('select')) {
-					elm.find('options').each(function () {
-						if(val != false) {
-							if(this.val() == val) {
-								this.selected = true;
-								return false;
-							}
-						} else if (this.defaultSelected) {
-							this.selected = true;
-							return false;
-						}
-					});
-				} else if(elm.is('input')) {
-					if(elm.attr('type') == 'checkbox') {
-						val != false ? elm.attr('checked', 'checked') : elm.removeAttr('checked');
-					} else {
-						elm.val(val || '');
-					}
-				}
-			}
-		}
-
-		$(function() {
-
-			$('.element_add').click(function(e) {
-				add();
-				return false;
-			});
-
-			$('.element_edit', '#list').click(function(e) {
-				edit($(this).data('id'));
-				return false;
-			});
-
-			$('.element_delete', '#list').click(function(e) {
-				remove($(this).data('id'));
-				return false;
-			});
-		});
 	</script>
 	<form method="post" name="{{ model }}" style="display: none">
 		<table>
@@ -97,11 +51,12 @@
 	<br />
 	<a href="#" class="element_add">Add</a>
 	<br />
-	<table id="list">
+	<table id="list_{{ model }}" >
 		<tr>
 			{% for attr in fields %}
 				<td>{{attr}}</td>
 			{% endfor %}
+			<td></td>
 			<td></td>
 			<td></td>
 		</tr>
@@ -112,6 +67,7 @@
 			{% endfor %}
 			<td><a href="#" class="element_edit" data-id="{{element.id}}">Edit</a></td>
 			<td><a href="#" class="element_delete" data-id="{{element.id}}">Remove</a></td>
+			<td><a href="#" class="element_action" data-id="{{element.id}}" data-model="{{model}}" style="display:none">Action</a></td>
 		</tr>
 		{% endfor %}
 	</table>

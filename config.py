@@ -10,6 +10,11 @@ WTF_CSRF_ENABLED = True
 SECRET_KEY = 'you-will-never-guess'
 POSTS_PER_PAGE = 3
 
+CONSUMER_KEY = 'Iq66eQcFgqFj0u4iuUiw7RI7I'
+CONSUMER_SECRET = 'HGIIyeAzZxahrmCYn05JquAP5StIIGaBsK8DrtzUs4JBYsoET8'
+ACCESS_TOKEN = '826439552034279424-4GUxKg83KlUgbggI4kaKlU9KwRavENY'
+ACCESS_TOKEN_SECRET = 'YEzQ0PKQ3C92UMwVoFU3L0811e2cEQITeUAQA4HqMVzH5'
+
 OPENID_PROVIDERS = [
     { 'name': 'Google', 'url': 'https://www.google.com/accounts/o8/id' },
     { 'name': 'Yahoo', 'url': 'https://me.yahoo.com' },
