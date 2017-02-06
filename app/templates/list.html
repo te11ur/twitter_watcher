@@ -15,9 +15,9 @@
 
 			{% for element in elements.items %} 
 				data[{{element.id}}] = {
-				{% for attr in fields %}
-					'{{attr}}' : '{{element[attr]}}',
-				{% endfor %} 'delete': false};
+				{% for attr in fields -%}
+					"{{attr}}" : "{{ element[attr]|urlencode }}",
+				{%- endfor %} 'delete': false};
 			{% endfor %}
 
 			update(data[id] || {}, form);			

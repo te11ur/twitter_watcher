@@ -1,14 +1,16 @@
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://twitter_watch:zsexdr@127.0.0.1/twitter_watcher'
+SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://twitter_watch:zsexdr@localhost/twitter_watcher'
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 SERVER_HOST = 'localhost'
-SERVER_PORT = 5000
+SERVER_PORT = 80
+DEBUG = True
 WTF_CSRF_ENABLED = True
 SECRET_KEY = 'you-will-never-guess'
-POSTS_PER_PAGE = 3
+POSTS_PER_PAGE = 10
+DEAMON_SLEEP_TIME = 5
 
 CONSUMER_KEY = 'Iq66eQcFgqFj0u4iuUiw7RI7I'
 CONSUMER_SECRET = 'HGIIyeAzZxahrmCYn05JquAP5StIIGaBsK8DrtzUs4JBYsoET8'

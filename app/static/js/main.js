@@ -20,8 +20,10 @@ function update(fields, form) {
 			if(elm.attr('type') == 'checkbox') {
 				val != false ? elm.attr('checked', 'checked') : elm.removeAttr('checked');
 			} else {
-				elm.val(val || '');
+				elm.val(decodeURIComponent(val) || '');
 			}
+		} else if(elm.is('textarea')) {
+			elm.val(decodeURIComponent(val) || '');
 		}
 	}
 }
@@ -34,12 +36,12 @@ $(function() {
 		return false;
 	});
 
-	$('.element_edit', '#list').click(function(e) {
+	$('.element_edit').click(function(e) {
 		edit($(this).data('id'));
 		return false;
 	});
 
-	$('.element_delete', '#list').click(function(e) {
+	$('.element_delete').click(function(e) {
 		remove($(this).data('id'));
 		return false;
 	});

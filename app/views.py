@@ -39,9 +39,12 @@ def before_request():
 	g.user = current_user
 
 @app.route('/')
-@app.route('/index')
-def index():
-	return render_template('empty.html')
+@app.route('/<string:watch>')
+@app.route('/<string:watch>/<int:page>')
+@app.route('/<string:watch>/<int:page>/<int:count>')
+def index(watch = None, page=1, count = POSTS_PER_PAGE):
+	result = [{'id': r.id, 'key': r.key, 'create': (r.create or datetime.utcnow()).strftime ("%Y-%m-%d %H:%M:%S"), 'add': (r.add or datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S"), 'push': (r.push or datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S"), 'text': r.text} for r in Repository.query.filter(Repository.watcher.has(name = watch)).order_by(Repository.create.desc()).paginate(page, count, False).items]
+	return jsonify(result);
 
 @app.route('/admin')
 @app.route('/admin/index')
@@ -83,10 +86,11 @@ def applications(page=1):
 					flash('Cannot edit application: ' + str(editId))
 				else:
 					application.name = form.name.data
+					application.params = form.params.data
 					db.session.commit()
 				return redirect(url_for('applications', page = page))
 			
-			application = Application(name = form.name.data)
+			application = Application(name = form.name.data, params = form.params.data)
 			db.session.add(application)
 			db.session.commit()
 			flash('Your application is now live!')
@@ -98,7 +102,7 @@ def applications(page=1):
 	
 	applications = Application.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
-	return render_template('list.html', pages = pages, form = form, elements = applications, fields = ['id', 'name'], title = 'Application', model = 'application', route = 'applications')
+	return render_template('list.html', pages = pages, form = form, elements = applications, fields = ['id', 'name', 'params', 'status'], title = 'Application', model = 'application', route = 'applications')
 
 
 @app.route('/admin/services', methods = ['GET', 'POST'])
@@ -128,21 +132,20 @@ def services(page=1):
 			except ValueError as e:
 				editId = 0
 
-		
-
 			if editId > 0:
 				service = db.session.query(Service).get(editId)
 				if service is None:
 					flash('Cannot edit service: ' + str(editId))
 				else:
-					service.command = form.command.data
+					service.api = form.api.data
 					service.repository = form.repository.data
 					service.push = form.push.data
 					service.enabled = form.enabled.data
+					service.params = form.params.data
 					db.session.commit()
 				return redirect(url_for('services', page = page))
 			
-			service = Service(command = form.command.data, repository = form.repository.data, push = form.push.data, enabled = form.enabled.data, status = 'off')
+			service = Service(api = form.api.data, repository = form.repository.data, push = form.push.data, enabled = form.enabled.data, params = form.params.data)
 			db.session.add(service)
 			db.session.commit()
 			flash('Your services is now live!')
@@ -154,7 +157,7 @@ def services(page=1):
 	
 	services = Service.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
-	return render_template('list.html', pages = pages, form = form, elements = services, fields = ['id', 'command', 'repository', 'push', 'enabled', 'status'], title = 'Service', model = 'service', route = 'services')
+	return render_template('list.html', pages = pages, form = form, elements = services, fields = ['id', 'api', 'repository', 'push', 'enabled', 'params', 'status'], title = 'Service', model = 'service', route = 'services')
 
 @app.route('/admin/watchers', methods = ['GET', 'POST'])
 @app.route('/admin/watchers/<int:page>', methods = ['GET', 'POST'])
@@ -163,7 +166,7 @@ def watchers(page=1):
 	#user = g.user
 	form = WatcherForm()
 	form.application.choices = [(a.id, a.name) for a in Application.query.order_by('id')]
-	form.service.choices = [(s.id, s.command) for s in Service.query.order_by('id')]
+	form.service.choices = [(s.id, s.api) for s in Service.query.order_by('id')]
 
 	if request.method == 'POST':
 		if form.delete.validate(form):
@@ -193,10 +196,11 @@ def watchers(page=1):
 					watcher.name = form.name.data
 					watcher.application_id = form.application.data
 					watcher.service_id = form.service.data
+					watcher.params = form.params.data
 					db.session.commit()
 				return redirect(url_for('watchers', page = page))
 			
-			watcher = Watcher(name = form.name.data, application_id = form.application.data, service_id = form.service.data)
+			watcher = Watcher(name = form.name.data, application_id = form.application.data, service_id = form.service.data, params = form.params.data)
 			db.session.add(watcher)
 			db.session.commit()
 			flash('Your watcher is now live!')
@@ -207,7 +211,7 @@ def watchers(page=1):
 
 	watchers = Watcher.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
-	return render_template('list.html', pages = pages, form = form, elements = watchers, fields = ['id', 'name', 'application', 'service'], title = 'Watcher', model = 'watcher', route = 'watchers')
+	return render_template('list.html', pages = pages, form = form, elements = watchers, fields = ['id', 'name', 'params', 'application', 'service'], title = 'Watcher', model = 'watcher', route = 'watchers')
 
 @app.route('/admin/repositories', methods = ['GET', 'POST'])
 @app.route('/admin/repositories/<int:page>', methods = ['GET', 'POST'])
@@ -245,10 +249,12 @@ def repositories(page=1):
 					repository.watcher_id = form.watcher.data
 					repository.add = form.add.data
 					repository.push = form.push.data
+					repository.text_raw = form.text_raw.data
+					repository.text = form.text.data
 					db.session.commit()
 				return redirect(url_for('repositories', page = page))
 			
-			repository = Repository(watcher_id = form.watcher.data, add = form.add.data, push = form.push.data)
+			repository = Repository(watcher_id = form.watcher.data, add = form.add.data, push = form.push.data, text_raw = form.text_raw.data, text = form.text.data)
 			db.session.add(repository)
 			db.session.commit()
 			flash('Your repository is now live!')
@@ -260,7 +266,7 @@ def repositories(page=1):
 
 	repositories = Repository.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
-	return render_template('list.html', pages = pages, form = form, elements = repositories, fields = ['id','watcher','create','add', 'push'], title = 'Repository', model = 'repository', route = 'repositories')
+	return render_template('list.html', pages = pages, form = form, elements = repositories, fields = ['id', 'key', 'watcher','create','add', 'push', 'text', 'text_raw'], title = 'Repository', model = 'repository', route = 'repositories')
 
 @app.route('/admin/run/<string:model>/<int:id>')
 #@login_required
