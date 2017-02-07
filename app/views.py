@@ -6,6 +6,7 @@ from forms import LoginForm, ApplicationForm, ServiceForm, WatcherForm, Reposito
 from models import User, Application, Service, Watcher, Repository
 from datetime import datetime
 from config import POSTS_PER_PAGE
+import json
 
 pages = [
 	{ 
@@ -43,8 +44,31 @@ def before_request():
 @app.route('/<string:watch>/<int:page>')
 @app.route('/<string:watch>/<int:page>/<int:count>')
 def index(watch = None, page=1, count = POSTS_PER_PAGE):
-	result = [{'id': r.id, 'key': r.key, 'create': (r.create or datetime.utcnow()).strftime ("%Y-%m-%d %H:%M:%S"), 'add': (r.add or datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S"), 'push': (r.push or datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S"), 'text': r.text} for r in Repository.query.filter(Repository.watcher.has(name = watch)).order_by(Repository.create.desc()).paginate(page, count, False).items]
-	return jsonify(result);
+	pages = Repository.query.filter(Repository.watcher.has(name = watch)).\
+		order_by(Repository.create.desc()).\
+		paginate(page, count)
+		
+	def decript_entity(entity):
+		try: 
+			return json.loads(entity)
+		except ValueError as e:
+			return {}
+			
+	return jsonify({
+			'page': str(pages.page or 1),
+			'prev': str(pages.prev_num),
+			'next': str(pages.next_num),
+			'total_pages': str(pages.pages),
+			'per_page': str(pages.per_page),
+			'result': [{ 
+			'id': r.id,
+			'key': r.key,
+			'create': (r.create or datetime.utcnow()).strftime ("%Y-%m-%d %H:%M:%S"),
+			'add': (r.add or datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S"),
+			'push': (r.push or datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S"),
+			'text': r.text,
+			'entities': decript_entity(r.text_raw)
+		} for r in pages.items]});
 
 @app.route('/admin')
 @app.route('/admin/index')
