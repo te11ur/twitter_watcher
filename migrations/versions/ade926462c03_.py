@@ -21,7 +21,7 @@ def upgrade():
     op.add_column('application', sa.Column('params', sa.JSON(), nullable=True))
     op.add_column('repository', sa.Column('text', sa.Text(convert_unicode=True), nullable=True))
     op.add_column('repository', sa.Column('text_raw', sa.Text(convert_unicode=True), nullable=True))
-    op.add_column('service', sa.Column('api', sa.String(length=100), nullable=False))
+    op.add_column('service', sa.Column('api', sa.String(length=100), nullable=True))
     op.add_column('service', sa.Column('params', sa.JSON(), nullable=True))
     op.drop_column('service', 'command')
     op.add_column('user', sa.Column('password_hash', sa.String(length=64), nullable=True))

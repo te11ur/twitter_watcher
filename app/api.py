@@ -28,7 +28,7 @@ class TwitterAPI():
 			auth.set_access_token(self.access_token, self.access_token_secret)
 			api = tweepy.API(auth)
 			for status in tweepy.Cursor(api.user_timeline, **filter).items(200):
-				result.append((status.id_str, {'create': status.created_at, 'text_raw': json.dumps(status.entities), 'text': self.strip_tags(status.text.encode('utf8'))}))
+				result.append((status.id_str.encode('utf8'), {'create': status.created_at, 'text_raw': json.dumps(status.entities).encode('utf8'), 'text': self.strip_tags(status.text.encode('utf8'))}))
 		except tweepy.error.TweepError as e:
 			print 'Connection error'
 

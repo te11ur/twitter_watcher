@@ -53,6 +53,8 @@ def index(watch = None, page=1, count = POSTS_PER_PAGE):
 			return json.loads(entity)
 		except ValueError as e:
 			return {}
+		except TypeError as e:
+			return {}
 			
 	return jsonify({
 			'page': str(pages.page or 1),
