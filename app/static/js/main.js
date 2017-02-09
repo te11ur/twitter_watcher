@@ -17,13 +17,14 @@ function update(fields, form) {
 				}
 			});
 		} else if(elm.is('input')) {
+				val = val != false ? decodeURIComponent(val) : flase;
 			if(elm.attr('type') == 'checkbox') {
 				val != false ? elm.attr('checked', 'checked') : elm.removeAttr('checked');
 			} else {
-				elm.val(decodeURIComponent(val) || '');
+				elm.val(val || '');
 			}
 		} else if(elm.is('textarea')) {
-			elm.val(decodeURIComponent(val) || '');
+			elm.val(val || '');
 		}
 	}
 }

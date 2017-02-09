@@ -2,9 +2,9 @@ from datetime import datetime
 import oauth, tweepy, sys, locale, threading
 import requests, json, re
 
-def factory(api, params):
+def factory(api, params, timeout):
 	if api == 'twitter':
-		return TwitterAPI(params)
+		return TwitterAPI(params, timeout)
 	return None;
 
 class TwitterAPI():
@@ -12,23 +12,27 @@ class TwitterAPI():
 	consumer_secret = ''
 	access_token = ''
 	access_token_secret = ''
+	timeout = 0
 	
-	def __init__(self, params):
+	def __init__(self, params, timeout=60):
 		data = json.loads(params)
 		self.consumer_key = data['consumer_key']
 		self.consumer_secret = data['consumer_secret']
 		self.access_token = data['access_token']
 		self.access_token_secret = data['access_token_secret']
+		self.timeout = timeout
 		
-	def read(self, params):
+	def read(self, key, params):
 		result = []
-		filter = json.loads(params)
+		filter = json.loads(params)	
+		if key is not None:
+			filter["since_id"] = key
 		try:
 			auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
 			auth.set_access_token(self.access_token, self.access_token_secret)
-			api = tweepy.API(auth)
-			for status in tweepy.Cursor(api.user_timeline, **filter).items(200):
-				result.append((status.id_str.encode('utf8'), {'create': status.created_at, 'text_raw': json.dumps(status.entities).encode('utf8'), 'text': self.strip_tags(status.text.encode('utf8'))}))
+			api = tweepy.API(auth, timeout=self.timeout)
+			for status in tweepy.Cursor(api.user_timeline, **filter).items(1000):
+				result.append((status.id_str.encode('utf8'), {'create': status.created_at, 'text_raw': json.dumps(status.entities).encode('utf8'), 'text': status.text.encode('utf8')}))
 		except tweepy.error.TweepError as e:
 			print 'Connection error'
 
