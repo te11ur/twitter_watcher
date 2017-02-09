@@ -1,30 +1,29 @@
 from app import db
 import json
+import base64
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 #from enum import Enum
 
 #class StatusEnum(Enum):
 #    off = "off"
 #    on = "on"
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    email = db.Column(db.String(120), index = True, unique = True)
-    password_hash = db.Column(db.String(64))
+class User(UserMixin, db.Model):
+	id = db.Column(db.Integer, primary_key = True)
+	email = db.Column(db.String(120), index = True, unique = True)
+	password_hash = db.Column(db.String(128))
 
-    def is_authenticated(self):
-        return True
+	@property
+	def password(self):
+		raise AttributeError('password is not a readable attribute')
 
-    def is_active(self):
-        return True
+	@password.setter
+	def password(self, password):
+		self.password_hash = generate_password_hash(password)
 
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return unicode(self.id)
-
-    def __repr__(self):
-        return self.email
+	def verify_password(self, password):
+		return check_password_hash(self.password_hash, password)
 
 class Repository(db.Model):
 	id = db.Column(db.Integer, primary_key = True)	

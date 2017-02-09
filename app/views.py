@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
-from app import app, db, lm, oid
+from app import app, db, lm
 from app.service import factory as serviceFactory
-from forms import LoginForm, ApplicationForm, ServiceForm, WatcherForm, RepositoryForm
+from forms import LoginForm, RegisterForm, ApplicationForm, ServiceForm, WatcherForm, RepositoryForm
 from models import User, Application, Service, Watcher, Repository
 from datetime import datetime
 from config import POSTS_PER_PAGE
@@ -34,10 +34,6 @@ pages = [
 @lm.user_loader
 def load_user(id):
 	return User.query.get(int(id))
-
-@app.before_request
-def before_request():
-	g.user = current_user
 
 @app.route('/')
 @app.route('/<string:watch>')
@@ -74,16 +70,14 @@ def index(watch = None, page=1, count = POSTS_PER_PAGE):
 
 @app.route('/admin')
 @app.route('/admin/index')
-#@login_required
+@login_required
 def admin():
-	#user = g.user
 	return render_template('index.html', title = 'Home', pages = pages)
 
 @app.route('/admin/applications', methods = ['GET', 'POST'])
 @app.route('/admin/applications/<int:page>', methods = ['GET', 'POST'])
-#@login_required
+@login_required
 def applications(page=1):
-	#user = g.user
 	form = ApplicationForm()
 	if request.method == 'POST':
 		if form.delete.validate(form):
@@ -133,9 +127,8 @@ def applications(page=1):
 
 @app.route('/admin/services', methods = ['GET', 'POST'])
 @app.route('/admin/services/<int:page>', methods = ['GET', 'POST'])
-#@login_required
+@login_required
 def services(page=1):
-	#user = g.user
 	form = ServiceForm()
 	if request.method == 'POST':
 		if form.delete.validate(form):
@@ -187,9 +180,8 @@ def services(page=1):
 
 @app.route('/admin/watchers', methods = ['GET', 'POST'])
 @app.route('/admin/watchers/<int:page>', methods = ['GET', 'POST'])
-#@login_required
+@login_required
 def watchers(page=1):
-	#user = g.user
 	form = WatcherForm()
 	form.application.choices = [(a.id, a.name) for a in Application.query.order_by('id')]
 	form.service.choices = [(s.id, s.api) for s in Service.query.order_by('id')]
@@ -241,9 +233,8 @@ def watchers(page=1):
 
 @app.route('/admin/repositories', methods = ['GET', 'POST'])
 @app.route('/admin/repositories/<int:page>', methods = ['GET', 'POST'])
-#@login_required
+@login_required
 def repositories(page=1):
-	#user = g.user
 	form = RepositoryForm()
 	form.watcher.choices = [(w.id, w.name) for w in Watcher.query.order_by('id')]
 	if request.method == 'POST':
@@ -303,44 +294,44 @@ def run(model, id):
 	
 	return jsonify(error = 'no run with type ' + model + ' found');
 
-@app.route('/admin/login', methods = ['GET', 'POST'])
-#@oid.loginhandler
-def login():
-	#if g.user is not None and g.user.is_authenticated:
-		#return redirect(url_for('admin/index'))
-	form = LoginForm()
+@app.route('/admin/register', methods=['GET', 'POST'])
+def register():
+	"""User registration route."""
+	if current_user.is_authenticated:
+		return redirect(url_for('admin'))
+
+	form = RegisterForm()
 	if form.validate_on_submit():
-		session['remember_me'] = form.remember_me.data
-		return oid.try_login(form.openid.data, ask_for = ['nickname', 'email'])
-	return render_template('login.html', title = 'Sign In', form = form, providers = app.config['OPENID_PROVIDERS'])
+		user = User.query.filter_by(email=form.email.data).first()
+		if user is not None:
+			flash('Username already exists.')
+			return redirect(url_for('register'))
 
-@oid.after_login
-def after_login(resp):
-    if resp.email is None or resp.email == "":
-        flash('Invalid login. Please try again.')
-        return redirect(url_for('admin/login'))
-
-	user = User.query.filter_by(email = resp.email).first()
-
-	if user is None:
-		nickname = resp.nickname
-		if nickname is None or nickname == "":
-			nickname = resp.email.split('@')[0]
-		user = User(nickname = nickname, email = resp.email)
+		user = User(email=form.email.data, password=form.password.data)
 		db.session.add(user)
 		db.session.commit()
 
-	remember_me = False
+		return redirect(url_for('admin'))
+	return render_template('register.html', form=form)
 
-	if 'remember_me' in session:
-		remember_me = session['remember_me']
-		session.pop('remember_me', None)
+@app.route('/admin/login', methods = ['GET', 'POST'])
+def login():
+	if current_user.is_authenticated:
+		return redirect(url_for('admin'))
 
-	login_user(user, remember = remember_me)
+	form = LoginForm()
+	if form.validate_on_submit():
+		user = User.query.filter_by(email=form.email.data).first()
+		if user is None or not user.verify_password(form.password.data):
+			flash('Invalid username or password.')
+			return redirect(url_for('login'))
 
-	return redirect(request.args.get('next') or url_for('admin/index'))
+		login_user(user)
+		flash('You are now logged in!')
+		return redirect(url_for('admin'))
+	return render_template('login.html', title = 'Sign In', form = form)
 
 @app.route('/admin/logout')
 def logout():
 	logout_user()
-	return redirect(url_for('index'))
+	return redirect(url_for('admin'))

@@ -1,10 +1,14 @@
 from flask_wtf import FlaskForm
-from wtforms import TextField, BooleanField, HiddenField, BooleanField, SelectField, DateTimeField, TextAreaField
+from wtforms import TextField, BooleanField, HiddenField, BooleanField, SelectField, DateTimeField, TextAreaField, PasswordField
 from wtforms.validators import Required
 
 class LoginForm(FlaskForm):
-	openid = TextField('Openid', validators = [Required()])
-	remember_me = BooleanField('Remember_me', default = False)
+	email = TextField('Email', validators = [Required()])
+	password = PasswordField('Password', validators = [Required()])
+
+class RegisterForm(FlaskForm):
+	email = TextField('Email', validators = [Required()])
+	password = PasswordField('Password', validators = [Required()])
 
 class ApplicationForm(FlaskForm):
 	id = HiddenField('Id')

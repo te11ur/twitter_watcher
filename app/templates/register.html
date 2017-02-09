@@ -3,8 +3,8 @@
 
 {% block content %}
 
-<h1>Sign In</h1>
-<form action="" method="post" name="login">
+<h1>Register</h1>
+<form action="" method="post" name="register">
 	{{form.hidden_tag()}}
 	<p>
 		Email:<br>
@@ -22,9 +22,9 @@
 		{% endfor %}
 	</p>
 	<br />
-	<a href="/admin/register">Register</a>
+	<a href="/admin/login">Login</a>
 	<br />
 
-    <p><input type="submit" value="Sign In"></p>
+    <p><input type="submit" value="Register"></p>
 </form>
 {% endblock %}
