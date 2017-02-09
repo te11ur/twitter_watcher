@@ -31,7 +31,7 @@
 			form.show();		
 		}
 	</script>
-	<form method="post" name="{{ model }}" style="display: none">
+	<form method="post" name="{{ model }}" class="form" style="display: none">
 		<table>
 		{{form.hidden_tag()}}
 		{% for field in form if field.type != 'HiddenField' and field.type != 'CSRFTokenField' %}

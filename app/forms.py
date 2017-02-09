@@ -3,18 +3,19 @@ from wtforms import TextField, BooleanField, HiddenField, BooleanField, SelectFi
 from wtforms.validators import Required
 
 class LoginForm(FlaskForm):
-	email = TextField('Email', validators = [Required()])
-	password = PasswordField('Password', validators = [Required()])
+	email = TextField('email', description="Email", validators = [Required()])
+	password = PasswordField('password', description="Password", validators = [Required()])
 
 class RegisterForm(FlaskForm):
-	email = TextField('Email', validators = [Required()])
-	password = PasswordField('Password', validators = [Required()])
+	email = TextField('email', description="Email", validators = [Required()])
+	password = PasswordField('password', description="Password", validators = [Required()])
+	password_repeat = PasswordField('repeat_password', description="Repeat password", validators = [Required()])
 
 class ApplicationForm(FlaskForm):
 	id = HiddenField('Id')
 	delete = HiddenField('delete')
-	name = TextField('Name', validators = [Required()])
-	params = TextAreaField('Params')
+	name = TextField('name', validators = [Required()])
+	params = TextAreaField('params')
 
 class ServiceForm(FlaskForm):
 	id = HiddenField('Id')

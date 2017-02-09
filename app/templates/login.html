@@ -1,30 +1,21 @@
-<!-- extend base layout -->
 {% extends "base.html" %}
-
 {% block content %}
-
-<h1>Sign In</h1>
-<form action="" method="post" name="login">
+<form action="" method="post" name="login" class="form">
+	<h2 class="form-heading">{% if title %} {{title}} {% endif %}</h2>
 	{{form.hidden_tag()}}
-	<p>
-		Email:<br>
-		{{form.email(size=80)}}
-		{% for error in form.errors.email %}
-			<span style="color: red;">[{{error}}]</span>
-		{% endfor %}
-	</p>
-	<br />
-	<p>
-		Password:<br>
-		{{form.password(size=80)}}
-		{% for error in form.errors.password %}
-			<span style="color: red;">[{{error}}]</span>
-		{% endfor %}
-	</p>
+	<label for="{{ form.email.name }}" class="sr-only">{{ form.email.description }}</label>
+	{{form.email(size=80, class="form-control", autofocus="autofocus", required="required", id=form.email.name, placeholder=form.email.description)}}
+	{% for error in form.errors.email %}
+		<span style="color: red;">[{{error}}]</span>
+	{% endfor %}
+	<label for="{{ form.password.name }}" class="sr-only">{{ form.password.description }}</label>
+	{{form.password(size=80, class="form-control", required="required", id=form.password.name, placeholder=form.password.description)}}
+	{% for error in form.errors.password %}
+		<span style="color: red;">[{{error}}]</span>
+	{% endfor %}
 	<br />
 	<a href="/admin/register">Register</a>
 	<br />
-
-    <p><input type="submit" value="Sign In"></p>
+	<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 </form>
 {% endblock %}

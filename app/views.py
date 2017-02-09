@@ -312,7 +312,7 @@ def register():
 		db.session.commit()
 
 		return redirect(url_for('admin'))
-	return render_template('register.html', form=form)
+	return render_template('register.html', title = 'Please sign out', form=form)
 
 @app.route('/admin/login', methods = ['GET', 'POST'])
 def login():
@@ -329,7 +329,7 @@ def login():
 		login_user(user)
 		flash('You are now logged in!')
 		return redirect(url_for('admin'))
-	return render_template('login.html', title = 'Sign In', form = form)
+	return render_template('login.html', title = 'Please sign in', form = form)
 
 @app.route('/admin/logout')
 def logout():
