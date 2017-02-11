@@ -10,10 +10,6 @@ import json
 
 pages = [
 	{ 
-	    'url': 'index', 
-	    'title': 'Start' 
-	},
-	{ 
 	    'url': 'applications', 
 	    'title': 'Applications' 
 	},
