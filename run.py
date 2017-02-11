@@ -1,4 +1,7 @@
 #!/usr/bin/python
 from app import app
+from werkzeug.contrib.fixers import ProxyFix
 from config import SERVER_HOST, SERVER_PORT, DEBUG
-app.run(host=SERVER_HOST, port=SERVER_PORT, debug = DEBUG)
+
+if __name__ == '__main__':
+	app.run(host=SERVER_HOST, port=SERVER_PORT, debug = DEBUG)

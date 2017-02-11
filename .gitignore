@@ -2,4 +2,3 @@
 *.pyc
 /tmp/**
 config.py
-app.py
