@@ -41,7 +41,9 @@ class Repository(db.Model):
 
 class Watcher(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String(100))
+	name = db.Column(db.String(100))	
+	repository = db.Column(db.Boolean, default=False)
+	push = db.Column(db.Boolean, default=False)
 	params = db.Column(db.JSON)
 	service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
 	service = db.relationship("Service", back_populates="watchers")
@@ -55,11 +57,8 @@ class Watcher(db.Model):
 class Service(db.Model):
 	id = db.Column(db.Integer, primary_key = True)
 	api = db.Column(db.String(100), nullable=False)
-	repository = db.Column(db.Boolean, default=False)
-	push = db.Column(db.Boolean, default=False)
 	status = db.Column(db.DateTime)
 	params = db.Column(db.JSON)
-	enabled = db.Column(db.Boolean, default=False)
 	watchers = db.relationship("Watcher", order_by=Watcher.id, back_populates="service", cascade="all, delete, delete-orphan")
 
 	def __repr__(self):

@@ -21,15 +21,14 @@ class ServiceForm(FlaskForm):
 	id = HiddenField('Id')
 	delete = HiddenField('delete')
 	api = TextField('API', validators = [Required()])
-	repository = BooleanField('Repository', default = True)
-	push = BooleanField('Push', default = False)
 	params = TextAreaField('Params')
-	enabled = BooleanField('Enabled', default = True)
 
 class WatcherForm(FlaskForm):
 	id = HiddenField('Id')
 	delete = HiddenField('delete')
 	name = TextField('Name', validators = [Required()])
+	repository = BooleanField('Repository', default = True)
+	push = BooleanField('Push', default = False)
 	params = TextAreaField('Params', validators = [Required()])
 	application = SelectField('Application', validators = [Required()], coerce = int)
 	service = SelectField('Service', validators = [Required()], coerce = int)

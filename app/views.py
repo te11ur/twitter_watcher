@@ -61,9 +61,9 @@ def index(watch = None, page=1, count = POSTS_PER_PAGE):
 			'result': [{ 
 			'id': r.id,
 			'key': r.key,
-			'create': (r.create or datetime.utcnow()).strftime ("%Y-%m-%d %H:%M:%S"),
-			'add': (r.add or datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S"),
-			'push': (r.push or datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S"),
+			'create': '' if r.create == None else r.create.strftime("%Y-%m-%d %H:%M:%S"),
+			'add': '' if r.add == None else r.add.strftime("%Y-%m-%d %H:%M:%S"),
+			'push': '' if r.push == None else r.push.strftime("%Y-%m-%d %H:%M:%S"),
 			'text': r.text,
 			'entities': decript_entity(r.text_raw)
 		} for r in pages.items]});
@@ -157,14 +157,11 @@ def services(page=1):
 					flash('Cannot edit service: ' + str(editId))
 				else:
 					service.api = form.api.data
-					service.repository = form.repository.data
-					service.push = form.push.data
-					service.enabled = form.enabled.data
 					service.params = form.params.data
 					db.session.commit()
 				return redirect(url_for('services', page = page))
 			
-			service = Service(api = form.api.data, repository = form.repository.data, push = form.push.data, enabled = form.enabled.data, params = form.params.data)
+			service = Service(api = form.api.data, params = form.params.data)
 			db.session.add(service)
 			db.session.commit()
 			flash('Your services is now live!')
@@ -176,7 +173,7 @@ def services(page=1):
 	
 	services = Service.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
-	return render_template('list.html', pages = pages, form = form, elements = services, fields = ['id', 'api', 'repository', 'push', 'enabled', 'params', 'status'], title = 'Service', model = 'service', route = 'services')
+	return render_template('list.html', pages = pages, form = form, elements = services, fields = ['id', 'api', 'params', 'status'], title = 'Service', model = 'service', route = 'services')
 
 @app.route('/admin/watchers', methods = ['GET', 'POST'])
 @app.route('/admin/watchers/<int:page>', methods = ['GET', 'POST'])
@@ -212,13 +209,15 @@ def watchers(page=1):
 					flash('Cannot edit watcher: ' + str(editId))
 				else:
 					watcher.name = form.name.data
+					watcher.repository = form.repository.data
+					watcher.push = form.push.data
 					watcher.application_id = form.application.data
 					watcher.service_id = form.service.data
 					watcher.params = form.params.data
 					db.session.commit()
 				return redirect(url_for('watchers', page = page))
 			
-			watcher = Watcher(name = form.name.data, application_id = form.application.data, service_id = form.service.data, params = form.params.data)
+			watcher = Watcher(name = form.name.data, repository = form.repository.data, push = form.push.data, application_id = form.application.data, service_id = form.service.data, params = form.params.data)
 			db.session.add(watcher)
 			db.session.commit()
 			flash('Your watcher is now live!')
@@ -229,7 +228,7 @@ def watchers(page=1):
 
 	watchers = Watcher.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
-	return render_template('list.html', pages = pages, form = form, elements = watchers, fields = ['id', 'name', 'params', 'application', 'service'], title = 'Watcher', model = 'watcher', route = 'watchers')
+	return render_template('list.html', pages = pages, form = form, elements = watchers, fields = ['id', 'name', 'repository', 'push', 'params', 'application', 'service'], title = 'Watcher', model = 'watcher', route = 'watchers')
 
 @app.route('/admin/repositories', methods = ['GET', 'POST'])
 @app.route('/admin/repositories/<int:page>', methods = ['GET', 'POST'])

@@ -2,4 +2,4 @@
 *.pyc
 /tmp/**
 /log/*
-config.py
+os.path

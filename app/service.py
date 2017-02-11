@@ -22,21 +22,20 @@ class WatcherService():
 			return {'error': 'watcher has no service'}
 
 		pulled = 0;
-		pushed = 0;
-		if service.enabled == True:
-			if service.repository == True:
-				try:
-					f = Repository.query.filter(Repository.watcher.has(name = watcher.name)).order_by(Repository.create.desc()).first()
-					if f is not None:
-						f = f.key
-				except NoResultFound as e:
-					f = None
-				pulled = self.pull(f, watcher, service)
-				
-				if pulled > 0:
-					db.session.commit()
-			#if service.push == True:
-				#pushed = self.push(watcher)
+		pushed = True;
+		if watcher.repository == True:
+			try:
+				f = Repository.query.filter(Repository.watcher.has(name = watcher.name)).order_by(Repository.create.desc()).first()
+				if f is not None:
+					f = f.key
+			except NoResultFound as e:
+				f = None
+			pulled = self.pull(f, watcher, service)
+			
+			if pulled > 0:
+				db.session.commit()
+		#if watcher.push == True:
+			#pushed = self.push(watcher)
 			
 		return { 'pulled': str(pulled), 'pushed': str(pushed)}
 		
@@ -51,4 +50,7 @@ class WatcherService():
 			count += 1
 			
 		return count
+		
+	def push(self, repository, watcher, application):
+		return True
 		
