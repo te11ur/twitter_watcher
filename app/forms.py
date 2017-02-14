@@ -41,3 +41,8 @@ class RepositoryForm(FlaskForm):
 	text_raw = TextAreaField('entities', description="Entities")
 	text = TextAreaField('text', description="Text")
 	watcher = SelectField('watcher', description="Watcher", validators = [Required()], coerce = int)
+
+class TokenForm(FlaskForm):
+	id = HiddenField('id')
+	delete = HiddenField('delete')
+	token = TextField('token', description="token", validators = [Required()])

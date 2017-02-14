@@ -2,8 +2,8 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db, lm
 from app.service import factory as serviceFactory
-from forms import LoginForm, RegisterForm, ApplicationForm, ServiceForm, WatcherForm, RepositoryForm
-from models import User, Application, Service, Watcher, Repository
+from forms import LoginForm, RegisterForm, ApplicationForm, ServiceForm, WatcherForm, RepositoryForm, TokenForm
+from models import User, Application, Service, Watcher, Repository, Token
 from datetime import datetime
 from config import POSTS_PER_PAGE
 import json
@@ -24,6 +24,10 @@ pages = [
 	{ 
 	    'url': 'repositories', 
 	    'title': 'Repositories' 
+	},
+	{ 
+	    'url': 'tokens', 
+	    'title': 'Tokens' 
 	}
 ]
 
@@ -69,6 +73,74 @@ def index(watch = None, page=1, count = POSTS_PER_PAGE):
 @login_required
 def admin():
 	return render_template('index.html', title = 'Home', pages = pages)
+
+@app.route('/tokens', methods = ['POST'])
+def tokens_add():
+	form = TokenForm()
+	if token is None or form.validate():
+		return jsonify(error = 'token invalid');
+	try:	
+		f = Token.query.filter(token = token).first()
+	except NoResultFound as e:
+		f = None
+	
+	if f is not None:
+		return jsonify(error = 'token exists');
+		
+	token = Token(token = form.token.data)
+	db.session.add(token)
+	db.session.commit()	
+	return jsonify(ok='ok');
+	
+
+@app.route('/admin/tokens', methods = ['GET', 'POST'])
+@app.route('/admin/tokens/<int:page>', methods = ['GET', 'POST'])
+@login_required
+def tokens(page=1):
+	form = TokenForm()
+	if request.method == 'POST':
+		if form.delete.validate(form):
+			try:
+				deleteId = int(form.delete.data);
+			except ValueError as e:
+				deleteId = 0
+			if deleteId > 0:
+				token = db.session.query(Token).get(deleteId)
+				if token is None:
+					flash('Cannot delete token: ' + str(deleteId))
+				else:
+					db.session.delete(token)
+					db.session.commit()
+				return redirect(url_for('token', page = page))
+
+		if form.validate():
+			try:
+				editId = int(form.id.data);
+			except ValueError as e:
+				editId = 0
+
+			if editId > 0:
+				token = db.session.query(Token).get(editId)
+				if token is None:
+					flash('Cannot edit token: ' + str(editId))
+				else:
+					token.token = form.token.data
+					db.session.commit()
+				return redirect(url_for('tokens', page = page))
+			
+			token = Token(token = form.token.data)
+			db.session.add(token)
+			db.session.commit()
+			flash('Your token is now live!')
+			return redirect(url_for('tokens', page = page))
+		else:
+			flash('No data')
+			return redirect(url_for('tokens', page = page))
+			
+	
+	tokens = Token.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
+
+	return render_template('list.html', pages = pages, form = form, elements = tokens, fields = ['id', 'token'], title = 'Token', model = 'token', route = 'tokens')
 
 @app.route('/admin/applications', methods = ['GET', 'POST'])
 @app.route('/admin/applications/<int:page>', methods = ['GET', 'POST'])
@@ -119,7 +191,6 @@ def applications(page=1):
 	applications = Application.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
 	return render_template('list.html', pages = pages, form = form, elements = applications, fields = ['id', 'name', 'params', 'status'], title = 'Application', model = 'application', route = 'applications')
-
 
 @app.route('/admin/services', methods = ['GET', 'POST'])
 @app.route('/admin/services/<int:page>', methods = ['GET', 'POST'])

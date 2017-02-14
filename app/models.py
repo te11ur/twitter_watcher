@@ -24,7 +24,14 @@ class User(UserMixin, db.Model):
 
 	def verify_password(self, password):
 		return check_password_hash(self.password_hash, password)
-
+		
+class Token(db.Model):
+	id = db.Column(db.Integer, primary_key = True)
+	token = db.Column(db.String(56))
+			
+	def __repr__(self):
+		return self.token
+		
 class Repository(db.Model):
 	id = db.Column(db.Integer, primary_key = True)	
 	key = db.Column(db.String(90))
