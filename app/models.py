@@ -51,6 +51,7 @@ class Watcher(db.Model):
 	name = db.Column(db.String(100))	
 	repository = db.Column(db.Boolean, default=False)
 	push = db.Column(db.Boolean, default=False)
+	push_params = db.Column(db.JSON)
 	params = db.Column(db.JSON)
 	service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
 	service = db.relationship("Service", back_populates="watchers")

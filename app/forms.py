@@ -30,6 +30,7 @@ class WatcherForm(FlaskForm):
 	repository = BooleanField('repository', description="Add repository", default = True)
 	push = BooleanField('push', description="Send Push", default = False)
 	params = TextAreaField('params', description="Params", validators = [Required()])
+	push_params = TextAreaField('push_params', description="Push params", validators = [Required()])
 	application = SelectField('application', description="Application", validators = [Required()], coerce = int)
 	service = SelectField('service', description="Service", validators = [Required()], coerce = int)
 

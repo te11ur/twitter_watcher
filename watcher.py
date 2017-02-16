@@ -13,6 +13,7 @@ def run():
 		api = serviceFactory('watcher')
 		for watcher in Watcher.query.all():
 			pulled = 0
+			pushed = 0
 			f = None
 			if watcher.repository == True:
 				service = watcher.service				
@@ -41,9 +42,10 @@ def run():
 						f = None	
 						
 					if f is not None and f.push is None:
-						if api.push(f, watcher, application) == True:
+						pushed = api.push(f, watcher, application)
+						if pushed > 0:
 							if DEBUG == True:
-								print "Application {0} has new push notification\r\n".format(application.name)
+								print "Application %s has new %s pushs notification\r\n" % (application.name, pushed)
 							
 							f.push = datetime.utcnow()
 							application.status = datetime.utcnow()

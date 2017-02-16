@@ -1,7 +1,7 @@
 import json,time, os, random
 from app import app, db
 from sqlalchemy.orm.exc import NoResultFound
-from models import User, Application, Service, Watcher, Repository
+from models import User, Application, Service, Watcher, Repository, Token
 from app.api import factory as apiFactory
 from datetime import datetime
 from apns import APNs, Frame, Payload
@@ -12,9 +12,6 @@ def factory(name):
 		return WatcherService()
 	return None;
 		
-def response_listener(error_response):
-    print "client get error-response: " + str(error_response)
-	
 class WatcherService():
 	def run(self, id):
 		watcher = db.session.query(Watcher).get(id)
@@ -24,7 +21,7 @@ class WatcherService():
 		
 
 		pulled = 0;
-		pushed = True;
+		pushed = 0;
 		if watcher.repository == True:
 			service = watcher.service;
 			if service is None:
@@ -53,11 +50,11 @@ class WatcherService():
 				f = None	
 				
 			if f is not None: #and f.push is None:
-				if self.push(f, watcher, application) == True:
+				pushed = self.push(f, watcher, application)
+				if pushed > 0:
 					if DEBUG == True:
-						print "Application {0} has new push notification\r\n".format(application.name)
+						print "Application %s has new %s pushs notification\r\n" % (application.name, pushed)
 					
-					pushed = True
 					f.push = datetime.utcnow()
 					application.status = datetime.utcnow()
 					db.session.commit()
@@ -78,14 +75,40 @@ class WatcherService():
 		
 	def push(self, repository, watcher, application):
 		basedir = os.path.abspath(os.path.dirname(__file__))
+		try:
+			params = json.loads(application.params)
+		except ValueError as e:
+			params = {}
+
+		cert_file = params.get('cert_file')
+		if cert_file is None:
+			print 'Need cert_file'
+			return 0
+
+		params['cert_file'] = os.path.join(basedir, 'apns/%s/%s' % (application.name, cert_file))
+
+		key_file = params.get('key_file')
+		if key_file is None:
+			print 'Need key_file'
+			return 0
+
+		params['key_file'] = os.path.join(basedir, 'apns/%s/%s' % (application.name, key_file))
+
+		try:
+			push_params = json.loads(watcher.push_params)
+		except ValueError as e:
+			push_params = {}
+		except TypeError as e:
+			push_params = {}
 		
-		apns = APNs(use_sandbox=True, enhanced=True, cert_file=os.path.join(basedir, 'apns/cert.pem'), key_file=os.path.join(basedir, 'apns/key.pem'))
-		apns.gateway_server.register_response_listener(response_listener)
-		#token_hex = 'b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b87'
-		payload = Payload(alert=repository.text, sound="default", badge=1)
-		identifier = random.getrandbits(32)
-		for (token_hex, fail_time) in apns.feedback_server.items():
-			print str(token_hex)
-			apns.gateway_server.send_notification(token_hex, payload, identifier=identifier)
-		return True
+		push_params['alert'] = repository.text
+
+		apns = APNs(**params)
+		payload = Payload(**push_params)
+		count = 0
+
+		for token in db.session.query(Token):
+			#apns.gateway_server.send_notification(token.token, payload)
+			count += 1
+		return count
 		

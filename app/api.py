@@ -15,16 +15,24 @@ class TwitterAPI():
 	timeout = 0
 	
 	def __init__(self, params, timeout=60):
-		data = json.loads(params)
-		self.consumer_key = data['consumer_key']
-		self.consumer_secret = data['consumer_secret']
-		self.access_token = data['access_token']
-		self.access_token_secret = data['access_token_secret']
+		try:
+			data = json.loads(params)
+		except ValueError as e:	
+			data = {}
+
+		self.consumer_key = data.get('consumer_key')
+		self.consumer_secret = data.get('consumer_secret')
+		self.access_token = data.get('access_token')
+		self.access_token_secret = data.get('access_token_secret')
 		self.timeout = timeout
 		
 	def read(self, key, params):
 		result = []
-		filter = json.loads(params)	
+		try:
+			filter = json.loads(params)
+		except ValueError as e:	
+			filter = {}
+
 		if key is not None:
 			filter["since_id"] = key
 		try:

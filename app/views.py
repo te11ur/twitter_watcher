@@ -1,5 +1,6 @@
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
+from sqlalchemy.orm.exc import NoResultFound
 from app import app, db, lm
 from app.service import factory as serviceFactory
 from forms import LoginForm, RegisterForm, ApplicationForm, ServiceForm, WatcherForm, RepositoryForm, TokenForm
@@ -74,20 +75,20 @@ def index(watch = None, page=1, count = POSTS_PER_PAGE):
 def admin():
 	return render_template('index.html', title = 'Home', pages = pages)
 
-@app.route('/tokens', methods = ['POST'])
-def tokens_add():
-	form = TokenForm()
-	if token is None or form.validate():
+@app.route('/tokens/<string:token>')
+def tokens_add(token):
+
+	if token is None or len(token) != 56:
 		return jsonify(error = 'token invalid');
 	try:	
-		f = Token.query.filter(token = token).first()
+		f = Token.query.filter(Token.token == token).first()
 	except NoResultFound as e:
 		f = None
 	
 	if f is not None:
 		return jsonify(error = 'token exists');
 		
-	token = Token(token = form.token.data)
+	token = Token(token = token)
 	db.session.add(token)
 	db.session.commit()	
 	return jsonify(ok='ok');
@@ -281,10 +282,11 @@ def watchers(page=1):
 					watcher.application_id = form.application.data
 					watcher.service_id = form.service.data
 					watcher.params = form.params.data
+					watcher.push_params = form.push_params.data
 					db.session.commit()
 				return redirect(url_for('watchers', page = page))
 			
-			watcher = Watcher(name = form.name.data, repository = form.repository.data, push = form.push.data, application_id = form.application.data, service_id = form.service.data, params = form.params.data)
+			watcher = Watcher(name = form.name.data, repository = form.repository.data, push = form.push.data, application_id = form.application.data, service_id = form.service.data, params = form.params.data, push_params = form.push_params.data)
 			db.session.add(watcher)
 			db.session.commit()
 			flash('Your watcher is now live!')
@@ -295,7 +297,7 @@ def watchers(page=1):
 
 	watchers = Watcher.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
-	return render_template('list.html', pages = pages, form = form, elements = watchers, fields = ['id', 'name', 'repository', 'push', 'params', 'application', 'service'], title = 'Watcher', model = 'watcher', route = 'watchers')
+	return render_template('list.html', pages = pages, form = form, elements = watchers, fields = ['id', 'name', 'repository', 'push', 'params', 'push_params', 'application', 'service'], title = 'Watcher', model = 'watcher', route = 'watchers')
 
 @app.route('/admin/repositories', methods = ['GET', 'POST'])
 @app.route('/admin/repositories/<int:page>', methods = ['GET', 'POST'])
