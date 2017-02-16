@@ -4,4 +4,4 @@
 /log/*
 /app/apns/**
 os.path
-config.py
+
