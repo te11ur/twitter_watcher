@@ -27,7 +27,7 @@ class User(UserMixin, db.Model):
 		
 class Token(db.Model):
 	id = db.Column(db.Integer, primary_key = True)
-	token = db.Column(db.String(56))
+	token = db.Column(db.String(64))
 			
 	def __repr__(self):
 		return self.token
