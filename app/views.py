@@ -78,7 +78,7 @@ def admin():
 @app.route('/tokens/<string:token>')
 def tokens_add(token):
 
-	if token is None or len(token) != 56:
+	if token is None or len(token) != 64:
 		return jsonify(error = 'token invalid');
 	try:	
 		f = Token.query.filter(Token.token == token).first()
