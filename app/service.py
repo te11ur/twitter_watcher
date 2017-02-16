@@ -108,7 +108,7 @@ class WatcherService():
 		count = 0
 
 		for token in db.session.query(Token):
-			#apns.gateway_server.send_notification(token.token, payload)
+			apns.gateway_server.send_notification(token.token, payload)
 			count += 1
 		return count
 		
