@@ -102,6 +102,10 @@ class WatcherService():
 			push_params = {}
 		
 		push_params['alert'] = repository.text
+		
+
+		def response_listener(error_response):
+			print str(error_response)
 
 		apns = APNs(**params)
 		apns.gateway_server.register_response_listener(response_listener)
@@ -114,7 +118,4 @@ class WatcherService():
 			apns.gateway_server.send_notification(token.token, payload, identifier=identifier)
 			count += 1
 		return count
-
-def response_listener(error_response):
-	print str(error_response)
 		
