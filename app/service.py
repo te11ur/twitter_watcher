@@ -104,11 +104,17 @@ class WatcherService():
 		push_params['alert'] = repository.text
 
 		apns = APNs(**params)
+		apns.gateway_server.register_response_listener(response_listener)
 		payload = Payload(**push_params)
 		count = 0
 
-		for token in db.session.query(Token):
-			apns.gateway_server.send_notification(token.token, payload)
+		for token in Token.query.all():
+			identifier = random.getrandbits(32)
+			print token.token
+			apns.gateway_server.send_notification(token.token, payload, identifier=identifier)
 			count += 1
 		return count
+
+def response_listener(error_response):
+	print str(error_response)
 		
