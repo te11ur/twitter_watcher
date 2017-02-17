@@ -4,7 +4,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from models import User, Application, Service, Watcher, Repository, Token
 from app.api import factory as apiFactory
 from datetime import datetime
-from apns import APNs, Frame, Payload
+from apns.apns import APNs, Frame, Payload
 from config import TIMEOUT_API, DEBUG
 
 def factory(name):
@@ -85,14 +85,14 @@ class WatcherService():
 			print 'Need cert_file'
 			return 0
 
-		params['cert_file'] = os.path.join(basedir, 'apns/%s/%s' % (application.name, cert_file))
+		params['cert_file'] = os.path.join(basedir, 'apns_keys/%s/%s' % (application.name, cert_file))
 
 		key_file = params.get('key_file')
 		if key_file is None:
 			print 'Need key_file'
 			return 0
 
-		params['key_file'] = os.path.join(basedir, 'apns/%s/%s' % (application.name, key_file))
+		params['key_file'] = os.path.join(basedir, 'apns_keys/%s/%s' % (application.name, key_file))
 
 		try:
 			push_params = json.loads(watcher.push_params)
@@ -114,7 +114,6 @@ class WatcherService():
 
 		for token in Token.query.all():
 			identifier = random.getrandbits(32)
-			print token.token
 			apns.gateway_server.send_notification(token.token, payload, identifier=identifier)
 			count += 1
 		return count

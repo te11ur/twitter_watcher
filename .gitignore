@@ -2,6 +2,5 @@
 *.pyc
 /tmp/**
 /log/*
-/app/apns/**
 os.path
 
