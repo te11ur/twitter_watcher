@@ -111,7 +111,7 @@ class WatcherService():
 			if token_id is not None:
 				token = Token.query.get(token_id);
 				if token is not None:
-					token.enabled = False
+					#token.enabled = False
 					db.session.commit();
 			
 
