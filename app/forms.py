@@ -47,3 +47,4 @@ class TokenForm(FlaskForm):
 	id = HiddenField('id')
 	delete = HiddenField('delete')
 	token = TextField('token', description="token", validators = [Required()])
+	enabled = BooleanField('enabled', description="Enabled", default = True)

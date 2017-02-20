@@ -28,6 +28,7 @@ class User(UserMixin, db.Model):
 class Token(db.Model):
 	id = db.Column(db.Integer, primary_key = True)
 	token = db.Column(db.String(64))
+	enabled = db.Column(db.Boolean, default=True)
 			
 	def __repr__(self):
 		return self.token

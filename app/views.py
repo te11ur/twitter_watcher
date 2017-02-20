@@ -88,7 +88,7 @@ def tokens_add(token):
 	if f is not None:
 		return jsonify(error = 'token exists');
 		
-	token = Token(token = token)
+	token = Token(token = token, enabled = True)
 	db.session.add(token)
 	db.session.commit()	
 	return jsonify(ok='ok');
@@ -126,10 +126,11 @@ def tokens(page=1):
 					flash('Cannot edit token: ' + str(editId))
 				else:
 					token.token = form.token.data
+					token.enabled = form.enabled.data
 					db.session.commit()
 				return redirect(url_for('tokens', page = page))
 			
-			token = Token(token = form.token.data)
+			token = Token(token = form.token.data, enabled = form.enabled.data)
 			db.session.add(token)
 			db.session.commit()
 			flash('Your token is now live!')
@@ -141,7 +142,7 @@ def tokens(page=1):
 	
 	tokens = Token.query.order_by('id').paginate(page, POSTS_PER_PAGE, False);
 
-	return render_template('list.html', pages = pages, form = form, elements = tokens, fields = ['id', 'token'], title = 'Token', model = 'token', route = 'tokens')
+	return render_template('list.html', pages = pages, form = form, elements = tokens, fields = ['id', 'token', 'enabled'], title = 'Token', model = 'token', route = 'tokens')
 
 @app.route('/admin/applications', methods = ['GET', 'POST'])
 @app.route('/admin/applications/<int:page>', methods = ['GET', 'POST'])
@@ -361,7 +362,7 @@ def run(model, id):
 		return jsonify(service.run(id))
 	
 	return jsonify(error = 'no run with type ' + model + ' found');
-
+'''
 @app.route('/admin/register', methods=['GET', 'POST'])
 def register():
 	"""User registration route."""
@@ -381,7 +382,7 @@ def register():
 
 		return redirect(url_for('admin'))
 	return render_template('register.html', title = 'Please sign out', form=form)
-
+'''
 @app.route('/admin/login', methods = ['GET', 'POST'])
 def login():
 	if current_user.is_authenticated:

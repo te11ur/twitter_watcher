@@ -17,8 +17,6 @@ class WatcherService():
 		watcher = db.session.query(Watcher).get(id)
 		if watcher is None:
 			return {'error': 'watcher with id: ' + id + ' not found'}
-		
-		
 
 		pulled = 0;
 		pushed = 0;
@@ -49,7 +47,7 @@ class WatcherService():
 			except NoResultFound as e:
 				f = None	
 				
-			if f is not None: #and f.push is None:
+			if f is not None and f.push is None:
 				pushed = self.push(f, watcher, application)
 				if pushed > 0:
 					if DEBUG == True:
@@ -101,19 +99,30 @@ class WatcherService():
 		except TypeError as e:
 			push_params = {}
 		
-		push_params['alert'] = repository.text
-		
+		push_params['alert'] = repository.text		
 
+		responders = {}
 		def response_listener(error_response):
 			print str(error_response)
+
+			if error_response.get('status') == 8:
+				token_id = responders.get(error_response.get('identifier'));
+
+			if token_id is not None:
+				token = Token.query.get(token_id);
+				if token is not None:
+					token.enabled = False
+					db.session.commit();
+			
 
 		apns = APNs(**params)
 		apns.gateway_server.register_response_listener(response_listener)
 		payload = Payload(**push_params)
 		count = 0
 
-		for token in Token.query.all():
+		for token in Token.query.filter_by(enabled=True).all():
 			identifier = random.getrandbits(32)
+			responders[identifier] = token.id
 			apns.gateway_server.send_notification(token.token, payload, identifier=identifier)
 			count += 1
 		return count
